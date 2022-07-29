@@ -6,6 +6,7 @@ TagManager:
   tags:
   - goal
   - wall
+  - NormalCube
   layers:
   - Default
   - TransparentFX
