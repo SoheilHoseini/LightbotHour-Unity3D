@@ -25,10 +25,8 @@ public class PlayerMovement : MonoBehaviour
 
     void Update()
     {
-        //transform.Translate(transform.right * speed * Time.deltaTime);
-        //Debug.LogWarning(transform.forward.ToString());
 
-        if(Input.GetKeyDown(KeyCode.Space))
+        if (Input.GetKeyDown(KeyCode.Space))
         {
             MoveForward();
         }
@@ -51,24 +49,25 @@ public class PlayerMovement : MonoBehaviour
 
     private void MoveBackward()
     {
-        transform.position -= transform.forward * speed;
+        //transform.position -= transform.forward * speed;
     }
 
-    private void OnCollisionStay(Collision collision)
+    private void OnCollisionEnter(Collision collision)
     {
         
     }
-    private void OnCollisionEnter(Collision collision)
+
+    private void OnTriggerEnter(Collider other)
     {
-        if (collision.gameObject.tag == "wall")
+        if (other.gameObject.tag == "wall")
         {
             Debug.Log("Hit the wall");
-            speed = 0; // Stop the player to avoid it from shaking
+            //speed = 0; // Stop the player to avoid it from shaking
             gameObject.GetComponent<Rigidbody>().constraints = RigidbodyConstraints.FreezePosition;
         }
 
         // Keep the player from flowing in the air when it hits the normal cubes
-        if (collision.gameObject.tag == "NormalCube")
+        if (other.gameObject.tag == "NormalCube")
         {
             Debug.Log("Hit Normal Cube");
             gameObject.GetComponent<Rigidbody>().constraints = RigidbodyConstraints.FreezePositionY;
@@ -78,9 +77,20 @@ public class PlayerMovement : MonoBehaviour
     // To make the player move forward
     public void MoveForward()
     {
-        Debug.Log("Initial Position: " + transform.position.ToString());
-        transform.position += transform.forward * speed;
-        Debug.Log("Final Position: " + transform.position.ToString());
+        Debug.Log("Position: " + transform.position.ToString());
+        //transform.position += transform.forward * Time.deltaTime * speed;
+        //transform.Translate(transform.forward * speed * Time.deltaTime);
+        //Debug.Log("Final Position: " + transform.position.ToString());
+
+        // Moving to target position by a speed
+        Vector3 targetPosition = new Vector3();
+        targetPosition = transform.position += transform.forward;
+        transform.position = Vector3.Lerp(transform.position, targetPosition, speed * Time.deltaTime);
+
+        //float smoothTime = 0.5f;
+        //Vector3 velocity = Vector3.zero;
+        //transform.position = Vector3.SmoothDamp(transform.position, targetPosition, ref velocity, smoothTime, speed);
+
     }
 
     // To make the player turn 90 degrees counter-clockwise

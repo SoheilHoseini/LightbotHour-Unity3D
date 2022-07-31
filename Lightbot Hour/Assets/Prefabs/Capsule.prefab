@@ -222,7 +222,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   inputActions: 
   LevelsContainer: []
-  speed: 1
+  speed: 100
 --- !u!54 &496636846618711743
 Rigidbody:
   m_ObjectHideFlags: 0
