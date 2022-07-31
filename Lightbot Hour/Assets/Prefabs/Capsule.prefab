@@ -206,8 +206,8 @@ BoxCollider:
   m_IsTrigger: 0
   m_Enabled: 1
   serializedVersion: 2
-  m_Size: {x: 0.99999994, y: 1.9999999, z: 1.2932247}
-  m_Center: {x: 0, y: 0, z: 0.14661202}
+  m_Size: {x: 0.99999994, y: 1.9999999, z: 1.533413}
+  m_Center: {x: 0, y: 0, z: 0.24835199}
 --- !u!114 &2461221637986143665
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -222,7 +222,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   inputActions: 
   LevelsContainer: []
-  speed: 1.5
+  speed: 1
 --- !u!54 &496636846618711743
 Rigidbody:
   m_ObjectHideFlags: 0
