@@ -1909,7 +1909,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &230837852
 Transform:
   m_ObjectHideFlags: 0
@@ -13149,7 +13149,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!114 &1734771401
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -13159,21 +13159,12 @@ MonoBehaviour:
   m_GameObject: {fileID: 1734771400}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 34157579fa3bb4546be6a3a9bb2c1751, type: 3}
+  m_Script: {fileID: 11500000, guid: 596e9c6a3d0803542993ab641dc417e1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  inputActions: 
-  LevelsContainer:
-  - {fileID: 1240847051}
-  - {fileID: 230837851}
-  - {fileID: 214274705}
-  - {fileID: 1472627027}
-  - {fileID: 592895504}
-  - {fileID: 1826604691}
-  - {fileID: 96286154}
-  - {fileID: 1609737810}
-  - {fileID: 92897460}
-  speed: 0
+  normalCubePrefab: {fileID: 2800623334589028786, guid: 2500d4015ee23264b9d5c8fe7468911d, type: 3}
+  goalCubePrefab: {fileID: 7894820141019596235, guid: 4f8d35712d9f57648bcf26c64ebb84df, type: 3}
+  playerPrefab: {fileID: 4849581058567192288, guid: eee95c3ff48e5e94580a11246d2f9f46, type: 3}
 --- !u!4 &1734771402
 Transform:
   m_ObjectHideFlags: 0
