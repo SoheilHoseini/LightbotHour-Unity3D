@@ -19,32 +19,28 @@ public class PlayerMovement : MonoBehaviour
         RotateRight
     }
 
-    void Start()
-    {
-    }
-
     void Update()
     {
 
-        if (Input.GetKeyDown(KeyCode.Space))
-        {
-            MoveForward();
-        }
+        //if (Input.GetKeyDown(KeyCode.Space))
+        //{
+        //    MoveForward();
+        //}
 
-        if(Input.GetKeyDown(KeyCode.S))
-        {
-            MoveBackward();
-        }
+        //if(Input.GetKeyDown(KeyCode.S))
+        //{
+        //    MoveBackward();
+        //}
 
-        if (Input.GetKeyDown(KeyCode.A))
-        {
-            TurnLeft();
-        }
+        //if (Input.GetKeyDown(KeyCode.A))
+        //{
+        //    TurnLeft();
+        //}
 
-        if (Input.GetKeyDown(KeyCode.D))
-        {
-            TurnRight();
-        }
+        //if (Input.GetKeyDown(KeyCode.D))
+        //{
+        //    TurnRight();
+        //}
     }
 
     private void MoveBackward()
@@ -59,19 +55,19 @@ public class PlayerMovement : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        if (other.gameObject.tag == "wall")
-        {
-            Debug.Log("Hit the wall");
-            //speed = 0; // Stop the player to avoid it from shaking
-            gameObject.GetComponent<Rigidbody>().constraints = RigidbodyConstraints.FreezePosition;
-        }
+        //if (other.gameObject.tag == "wall")
+        //{
+        //    Debug.Log("Hit the wall");
+        //    //speed = 0; // Stop the player to avoid it from shaking
+        //    gameObject.GetComponent<Rigidbody>().constraints = RigidbodyConstraints.FreezePosition;
+        //}
 
-        // Keep the player from flowing in the air when it hits the normal cubes
-        if (other.gameObject.tag == "NormalCube")
-        {
-            Debug.Log("Hit Normal Cube");
-            gameObject.GetComponent<Rigidbody>().constraints = RigidbodyConstraints.FreezePositionY;
-        }
+        //// Keep the player from flowing in the air when it hits the normal cubes
+        //if (other.gameObject.tag == "NormalCube")
+        //{
+        //    Debug.Log("Hit Normal Cube");
+        //    gameObject.GetComponent<Rigidbody>().constraints = RigidbodyConstraints.FreezePositionY;
+        //}
     }
 
     // To make the player move forward

@@ -9,6 +9,7 @@ public class GameCore : MonoBehaviour
     [SerializeField] GameObject normalCubePrefab;
     [SerializeField] GameObject goalCubePrefab;
     [SerializeField] GameObject playerPrefab;
+    GameObject player;
 
     // An list to store the design of all levels in it
     // x, y, z represent floor, row and column
@@ -34,6 +35,8 @@ public class GameCore : MonoBehaviour
     // Determine which level to play
     [Tooltip("For Debugging Purpose")]
     [SerializeField] int levelIndex;
+    [Tooltip("For Debugging Purpose")]
+    [SerializeField] float speed;
 
     void Start()
     {
@@ -43,6 +46,29 @@ public class GameCore : MonoBehaviour
         DesignPlayerPosition();
         DesignPlayerRotation();
         GeneratePlayer(levelIndex);
+    }
+
+    private void Update()
+    {
+        if(Input.GetKeyDown(KeyCode.W))
+        {
+            MoveForward();
+        }    
+
+        if(Input.GetKeyDown(KeyCode.A))
+        {
+            TurnLeft();
+        }
+
+        if(Input.GetKeyDown(KeyCode.D))
+        {
+            TurnRight();
+        }
+
+        if(Input.GetKeyDown(KeyCode.Space))
+        {
+            LightUp();
+        }
     }
 
     // This method designs the array form of each level and adds them to the list of levels
@@ -434,15 +460,15 @@ public class GameCore : MonoBehaviour
     private void DesignPlayerPosition()
     {
         // Set position
-        playerPos1_1 = new Vector3(0, 0.5f, 0);
-        playerPos1_2 = new Vector3(0, 0.5f, 0);
-        playerPos1_3 = new Vector3(1, 0.5f, 1);
-        playerPos1_4 = new Vector3(4, 0.5f, 0);
-        playerPos1_5 = new Vector3(0, 1.5f, 2);
-        playerPos1_6 = new Vector3(4, 0.5f, 1);
-        playerPos1_7 = new Vector3(0, 0.5f, 0);
-        playerPos1_8 = new Vector3(3, 0.5f, 1);
-        playerPos2_1 = new Vector3(0, 1f, 0);
+        playerPos1_1 = new Vector3(0, 0.75f, 0);
+        playerPos1_2 = new Vector3(0, 0.75f, 0);
+        playerPos1_3 = new Vector3(1, 0.75f, 1);
+        playerPos1_4 = new Vector3(4, 0.75f, 0);
+        playerPos1_5 = new Vector3(0, 1.75f, 2);
+        playerPos1_6 = new Vector3(4, 0.75f, 1);
+        playerPos1_7 = new Vector3(0, 0.75f, 0);
+        playerPos1_8 = new Vector3(3, 0.75f, 1);
+        playerPos2_1 = new Vector3(0, 1.25f, 0);
 
         // Add to list of positions for each level
         playerPosList.Add(playerPos1_1);
@@ -489,12 +515,67 @@ public class GameCore : MonoBehaviour
         try
         {
             Debug.Log("Rotation: " + playerRotList[levelIndex - 1]);
-            Instantiate(playerPrefab, playerPosList[levelIndex - 1], playerRotList[levelIndex - 1]);
+            player = Instantiate(playerPrefab, playerPosList[levelIndex - 1], playerRotList[levelIndex - 1]);
         }
         catch (Exception e)
         {
             Debug.LogWarning("Error of player Instantiation: " + e.Message);
         }
+    }
+
+    // To make the player move forward
+    public void MoveForward()
+    {
+        Vector3 targetPosition = new Vector3();
+        targetPosition = player.transform.position += player.transform.forward;
+        //Debug.Log("Target Position: " + (int)targetPosition.x + "," + (int)targetPosition.y + "," + (int)targetPosition.z);
+        Debug.Log("Target Position: " + targetPosition);
+        Debug.Log("Normalized Target: " + NormalizeCoordinates(targetPosition));
+        try
+        {
+            Debug.Log("Target ID: " + levels[levelIndex - 1][(int)targetPosition.x, (int)targetPosition.y, (int)targetPosition.z]);
+        }
+        catch(Exception e)
+        {
+            Debug.Log(e.Message);
+            Debug.LogWarning("x: " + (int)targetPosition.x + " y: " + (int)targetPosition.y + " z: " + (int)targetPosition.z);
+        }
+        player.transform.position = Vector3.MoveTowards(player.transform.position, targetPosition, speed * Time.deltaTime);
+    }
+
+    public Vector3 NormalizeCoordinates(Vector3 cord)
+    {
+        Vector3 ans = new Vector3();
+        ans.x = cord.x;
+        ans.y = (cord.y - 0.25f) / 0.5f;
+        ans.y -= 1;
+        ans.z = cord.z;
+        return ans;
+    }
+    // To make the player jump up and forward(simultaneously)
+    public void Jump()
+    {
+
+    }
+
+    // To make the player turn 90 degrees counter-clockwise
+    public void TurnLeft()
+    {
+        player.transform.Rotate(0, -90, 0);
+        Debug.Log("Rotate Left!");
+    }
+
+    // To make the player turn 90 degrees clockwise
+    public void TurnRight()
+    {
+        player.transform.Rotate(0, 90, 0);
+        Debug.Log("Rotate Right!");
+    }
+
+    // When the player gets to a goal cube, it can light up and go to the next state
+    private void LightUp()
+    {
+        Debug.Log("Light is up darling");
     }
 }
 
