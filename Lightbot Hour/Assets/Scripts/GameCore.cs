@@ -528,12 +528,12 @@ public class GameCore : MonoBehaviour
     {
         Vector3 targetPosition = new Vector3();
         targetPosition = player.transform.position += player.transform.forward;
-        //Debug.Log("Target Position: " + (int)targetPosition.x + "," + (int)targetPosition.y + "," + (int)targetPosition.z);
-        Debug.Log("Target Position: " + targetPosition);
-        Debug.Log("Normalized Target: " + NormalizeCoordinates(targetPosition));
+        targetPosition = NormalizeCoordinates(targetPosition);
+        //Debug.Log("Target Position: " + targetPosition.y + "," + targetPosition.x + "," + targetPosition.z);
+        
         try
         {
-            Debug.Log("Target ID: " + levels[levelIndex - 1][(int)targetPosition.x, (int)targetPosition.y, (int)targetPosition.z]);
+            Debug.Log("Target Cube ID: " + levels[levelIndex - 1][(int)targetPosition.y, (int)targetPosition.x, (int)targetPosition.z]);
         }
         catch(Exception e)
         {
@@ -543,15 +543,18 @@ public class GameCore : MonoBehaviour
         player.transform.position = Vector3.MoveTowards(player.transform.position, targetPosition, speed * Time.deltaTime);
     }
 
+    // Normalaize the coordinates of the player to identify type of the cube it wants to go on
     public Vector3 NormalizeCoordinates(Vector3 cord)
     {
         Vector3 ans = new Vector3();
-        ans.x = cord.x;
+        ans.x = Convert.ToInt32(cord.x);
         ans.y = (cord.y - 0.25f) / 0.5f;
         ans.y -= 1;
-        ans.z = cord.z;
+        ans.y = Convert.ToInt32(ans.y);
+        ans.z = Convert.ToInt32(cord.z);
         return ans;
     }
+
     // To make the player jump up and forward(simultaneously)
     public void Jump()
     {
@@ -576,10 +579,75 @@ public class GameCore : MonoBehaviour
     private void LightUp()
     {
         Debug.Log("Light is up darling");
+
+    }
+
+    // Check if the next action is valid according to the map or not
+    public bool IsMoveValid(MoveActions action, Vector3 currnetPos, Vector3 targetPos)
+    {
+        bool ans;
+        Vector3Int targetPosInt, currentPosInt;
+        targetPosInt = ConvertToInt(targetPos);
+        currentPosInt = ConvertToInt(currnetPos);
+        switch(action)
+        {
+            case MoveActions.RotateLeft:
+                {
+                    ans = true;
+                    break;
+                }
+
+            case MoveActions.RotateRight:
+                {
+                    ans = true;
+                    break;
+                }
+
+            case MoveActions.LightUp:
+                {
+                    if ((levels[levelIndex][targetPosInt.x, targetPosInt.y, targetPosInt.z]) == 2)
+                        ans = true;
+                    else
+                        ans = false;
+                    break;
+                }
+
+            case MoveActions.Jump:
+                {
+                    break;
+                }
+
+            case MoveActions.Forward:
+                {
+                    break;
+                }
+        }
+        return ans;
+    }
+
+    // Convert values of a Vector3 to int
+    public Vector3Int ConvertToInt(Vector3 coord)
+    {
+        Vector3Int vector = new Vector3Int();
+        vector.x = Convert.ToInt32(coord.x);
+        vector.y = Convert.ToInt32(coord.y);
+        vector.z = Convert.ToInt32(coord.z);
+
+        return vector;
     }
 }
 
 public class Player
 {
     public int floor, row, column;
+}
+
+// Differnet types of player movment
+public enum MoveActions
+{
+    Forward,
+    Jump,
+    LightUp,
+    RotateLeft,
+    RotateRight
 }
