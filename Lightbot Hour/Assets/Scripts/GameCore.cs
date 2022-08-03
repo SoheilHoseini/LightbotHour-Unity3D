@@ -69,6 +69,11 @@ public class GameCore : MonoBehaviour
         {
             LightUp();
         }
+
+        if (Input.GetKeyDown(KeyCode.X))
+        {
+            Jump();
+        }
     }
 
     // This method designs the array form of each level and adds them to the list of levels
@@ -526,25 +531,47 @@ public class GameCore : MonoBehaviour
     // To make the player move forward
     public void MoveForward()
     {
-        Vector3 frontPosition = player.transform.position += player.transform.forward;
+        bool moveAvailability = false;
+        Vector3 frontPosition = player.transform.position + player.transform.forward;
+
+        // Normalize current and front position of the player
         frontPosition = NormalizeCoordinates(frontPosition);
+        Vector3 currentPos = NormalizeCoordinates(player.transform.position);
 
         Vector3 targetPosition = ReturnTargetPos(frontPosition);
-        //Debug.Log("target pos: " + targetPosition.y + "," + targetPosition.x + "," + targetPosition.z);
-
+        Debug.Log("target pos: " + targetPosition.y + "," + targetPosition.x + "," + targetPosition.z);
 
         try
         {
             int targetID = levels[levelIndex - 1][(int)targetPosition.y, (int)targetPosition.x, (int)targetPosition.z];
-            Debug.LogWarning("Is Move Available: " + IsMoveValid(MoveActions.Forward, player.transform.position, targetPosition, targetID));
+            moveAvailability = IsMoveValid(MoveActions.Forward, currentPos, targetPosition, targetID);
+            //Debug.LogWarning("Is Moving Forward Available: " + moveAvailability);
             Debug.Log("Target Cube ID: " + targetID);
+
+            if (moveAvailability == true)
+            {
+                player.transform.position += player.transform.forward;
+                //player.transform.position = Vector3.MoveTowards(player.transform.position, targetPosition, speed * Time.deltaTime);
+            }
         }
         catch(Exception e)
         {
             Debug.Log(e.Message);
             Debug.LogWarning("x: " + (int)targetPosition.x + " y: " + (int)targetPosition.y + " z: " + (int)targetPosition.z);
-        }
-        player.transform.position = Vector3.MoveTowards(player.transform.position, targetPosition, speed * Time.deltaTime);
+        } 
+    }
+
+    // Convert the current position of the player into game map format
+    private Vector3 ConvertPosToGameMapFormat(Vector3 position)
+    {
+        Vector3 playerPos = new Vector3();
+        
+        playerPos.x = position.y;
+        playerPos.y = position.x;
+        playerPos.z = position.z;
+
+        //return position;
+        return playerPos;
     }
 
     // Calculates the postion of the available front cube
@@ -607,10 +634,30 @@ public class GameCore : MonoBehaviour
     // To make the player jump up and forward(simultaneously)
     public void Jump()
     {
-        Vector3 frontPosition = player.transform.position += player.transform.forward;
+        bool moveAvailability = false;
+        Vector3 frontPosition = player.transform.position + player.transform.forward;
         frontPosition = NormalizeCoordinates(frontPosition);
-        Vector3 targetPosition = ReturnTargetPos(frontPosition);
+        Vector3 currentPos = NormalizeCoordinates(player.transform.position);
 
+        Vector3 targetPosition = ReturnTargetPos(frontPosition);
+        try
+        {
+            int targetID = levels[levelIndex - 1][(int)targetPosition.y, (int)targetPosition.x, (int)targetPosition.z];
+            moveAvailability = IsMoveValid(MoveActions.Jump, player.transform.position, targetPosition, targetID);
+            Debug.LogWarning("Is Jump Available: " + moveAvailability);
+            Debug.Log("Target Cube ID: " + targetID);
+
+            if (moveAvailability == true)
+            {
+                player.transform.position += player.transform.forward; 
+                //player.transform.position = Vector3.MoveTowards(player.transform.position, targetPosition, speed * Time.deltaTime);
+            }
+        }
+        catch (Exception e)
+        {
+            Debug.Log(e.Message);
+            Debug.LogWarning("x: " + (int)targetPosition.x + " y: " + (int)targetPosition.y + " z: " + (int)targetPosition.z);
+        }
     }
 
     // To make the player turn 90 degrees counter-clockwise
@@ -637,9 +684,18 @@ public class GameCore : MonoBehaviour
     public bool IsMoveValid(MoveActions action, Vector3 currnetPos, Vector3 targetPos, int targetID)
     {
         bool ans = true;
+
+        // Convert coordinates to game map format
+        currnetPos = ConvertPosToGameMapFormat(currnetPos);
+        targetPos = ConvertPosToGameMapFormat(targetPos);
+
+        // Convert float values to int for indexing
         Vector3Int targetPosInt, currentPosInt;
         targetPosInt = ConvertToInt(targetPos);
         currentPosInt = ConvertToInt(currnetPos);
+        
+
+        Debug.LogWarning("Current: " + currentPosInt.ToString() + "  Target: " + targetPosInt.ToString());
         switch(action)
         {
             case MoveActions.RotateLeft:
@@ -684,7 +740,7 @@ public class GameCore : MonoBehaviour
                         }
                         // if the target cube is higher than 1 or at the same level with the current cube
                         // movement is not allowed
-                        else if((targetPosInt.y - currentPosInt.y > 1) || (targetPosInt.y == currentPosInt.y))
+                        else if((targetPosInt.x - currentPosInt.x > 1) || (targetPosInt.x == currentPosInt.x))
                         {
                             ans = false;
                             Debug.Log("Jump Availability: False => It is the same height or more the 1 level higher!");
@@ -711,7 +767,7 @@ public class GameCore : MonoBehaviour
                             Debug.Log("Forward Availability: False => Is out of the map!");
                         }
                         // if the target cube is higher or lower than the current cube, it's not allowed to go
-                        else if(targetPosInt.y != currentPosInt.y)
+                        else if(targetPosInt.x != currentPosInt.x)
                         {
                             ans = false;
                             Debug.Log("Forward Availability: False => Not at the same height!");
