@@ -8,8 +8,10 @@ public class GameCore : MonoBehaviour
     [Header("All prefabs that make up the scenes")]
     [SerializeField] GameObject normalCubePrefab;
     [SerializeField] GameObject goalCubePrefab;
+    [SerializeField] GameObject goalCubeLightPrefab;
     [SerializeField] GameObject playerPrefab;
     GameObject player;
+    GameObject goalCubeLight;
     PlayerController playerControllerScript;
 
     // An list to store the design of all levels in it
@@ -543,7 +545,7 @@ public class GameCore : MonoBehaviour
         {
             int targetID = levels[levelIndex - 1][(int)targetPosition.y, (int)targetPosition.x, (int)targetPosition.z];
             bool moveAvailability = IsMoveValid(MoveActions.Forward, currentPos, targetPosition, targetID);
-            Debug.Log("Target Cube ID: " + targetID);
+            Debug.Log("Target Cube ID: " + targetID + "   Data: " + ConvertPosToGameMapFormat(targetPosition));
 
             if (moveAvailability == true)
             {
@@ -639,7 +641,7 @@ public class GameCore : MonoBehaviour
         {
             int targetID = levels[levelIndex - 1][(int)targetPosition.y, (int)targetPosition.x, (int)targetPosition.z];
             bool moveAvailability = IsMoveValid(MoveActions.Jump, currentPos, targetPosition, targetID);
-            Debug.Log("Target Cube ID: " + targetID);
+            Debug.Log("Target Cube ID: " + targetID + "   Data: " + ConvertPosToGameMapFormat(targetPosition));
 
             if (moveAvailability == true)
             {
@@ -673,13 +675,15 @@ public class GameCore : MonoBehaviour
     {
         Vector3 currentPos = NormalizeCoordinates(player.transform.position);
         currentPos = ConvertPosToGameMapFormat(currentPos);
-        int currentID = levels[levelIndex - 1][(int)currentPos.y, (int)currentPos.x, (int)currentPos.z];
-        Debug.Log("Light is up darling for pos: " + currentPos + "    ID: " + currentID);       
-        StartCoroutine(TurnOnPlayerLight());  
+        Vector3Int currentPosInt = ConvertToInt(currentPos);
+        int currentID = levels[levelIndex - 1][currentPosInt.y, currentPosInt.x, currentPosInt.z];
+        Debug.Log("Light is up darling for pos: " + currentPosInt + "    ID: " + currentID);       
+        StartCoroutine(TurnOnPlayerLight());
+
         
-        if(currentID == 2)
+        if (currentID == 2)
         {
-            StartCoroutine(TurnOnGoalCubeLight());
+            StartCoroutine(TurnOnGoalCubeLight(currentPos));
         }
     }
 
@@ -694,10 +698,13 @@ public class GameCore : MonoBehaviour
         playerControllerScript.TurnLightOff();
     }
 
-    IEnumerator TurnOnGoalCubeLight()
+    IEnumerator TurnOnGoalCubeLight(Vector3 currentPos)
     {
-
+        Vector3 lightPos = ConvertPosToGameMapFormat(currentPos);
+        lightPos.y = player.transform.position.y - 0.5f;
+        goalCubeLight = Instantiate(goalCubeLightPrefab, lightPos, transform.rotation);
         yield return new WaitForSeconds(0.5f);
+        goalCubeLight.SetActive(false);
     }
 
     // Check if the next action is valid according to the map or not
