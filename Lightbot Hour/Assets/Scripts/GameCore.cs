@@ -35,8 +35,6 @@ public class GameCore : MonoBehaviour
     // Determine which level to play
     [Tooltip("For Debugging Purpose")]
     [SerializeField] int levelIndex;
-    [Tooltip("For Debugging Purpose")]
-    [SerializeField] float speed;
 
     void Start()
     {
@@ -531,7 +529,6 @@ public class GameCore : MonoBehaviour
     // To make the player move forward
     public void MoveForward()
     {
-        bool moveAvailability = false;
         Vector3 frontPosition = player.transform.position + player.transform.forward;
 
         // Normalize current and front position of the player
@@ -539,19 +536,16 @@ public class GameCore : MonoBehaviour
         Vector3 currentPos = NormalizeCoordinates(player.transform.position);
 
         Vector3 targetPosition = ReturnTargetPos(frontPosition);
-        Debug.Log("target pos: " + targetPosition.y + "," + targetPosition.x + "," + targetPosition.z);
 
         try
         {
             int targetID = levels[levelIndex - 1][(int)targetPosition.y, (int)targetPosition.x, (int)targetPosition.z];
-            moveAvailability = IsMoveValid(MoveActions.Forward, currentPos, targetPosition, targetID);
-            //Debug.LogWarning("Is Moving Forward Available: " + moveAvailability);
+            bool moveAvailability = IsMoveValid(MoveActions.Forward, currentPos, targetPosition, targetID);
             Debug.Log("Target Cube ID: " + targetID);
 
             if (moveAvailability == true)
             {
                 player.transform.position += player.transform.forward;
-                //player.transform.position = Vector3.MoveTowards(player.transform.position, targetPosition, speed * Time.deltaTime);
             }
         }
         catch(Exception e)
@@ -634,17 +628,15 @@ public class GameCore : MonoBehaviour
     // To make the player jump up and forward(simultaneously)
     public void Jump()
     {
-        bool moveAvailability = false;
         Vector3 frontPosition = player.transform.position + player.transform.forward;
         frontPosition = NormalizeCoordinates(frontPosition);
         Vector3 currentPos = NormalizeCoordinates(player.transform.position);
-
         Vector3 targetPosition = ReturnTargetPos(frontPosition);
+
         try
         {
             int targetID = levels[levelIndex - 1][(int)targetPosition.y, (int)targetPosition.x, (int)targetPosition.z];
-            moveAvailability = IsMoveValid(MoveActions.Jump, player.transform.position, targetPosition, targetID);
-            Debug.LogWarning("Is Jump Available: " + moveAvailability);
+            bool moveAvailability = IsMoveValid(MoveActions.Jump, currentPos, targetPosition, targetID);
             Debug.Log("Target Cube ID: " + targetID);
 
             if (moveAvailability == true)
@@ -695,7 +687,7 @@ public class GameCore : MonoBehaviour
         currentPosInt = ConvertToInt(currnetPos);
         
 
-        Debug.LogWarning("Current: " + currentPosInt.ToString() + "  Target: " + targetPosInt.ToString());
+        Debug.Log("Current: " + currentPosInt.ToString() + "  Target: " + targetPosInt.ToString());
         switch(action)
         {
             case MoveActions.RotateLeft:
