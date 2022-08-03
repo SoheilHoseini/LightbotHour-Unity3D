@@ -514,7 +514,7 @@ public class GameCore : MonoBehaviour
     {
         try
         {
-            Debug.Log("Rotation: " + playerRotList[levelIndex - 1]);
+            //Debug.Log("Rotation: " + playerRotList[levelIndex - 1]);
             player = Instantiate(playerPrefab, playerPosList[levelIndex - 1], playerRotList[levelIndex - 1]);
         }
         catch (Exception e)
@@ -526,14 +526,18 @@ public class GameCore : MonoBehaviour
     // To make the player move forward
     public void MoveForward()
     {
-        Vector3 targetPosition = new Vector3();
-        targetPosition = player.transform.position += player.transform.forward;
-        targetPosition = NormalizeCoordinates(targetPosition);
-        //Debug.Log("Target Position: " + targetPosition.y + "," + targetPosition.x + "," + targetPosition.z);
-        
+        Vector3 frontPosition = player.transform.position += player.transform.forward;
+        frontPosition = NormalizeCoordinates(frontPosition);
+
+        Vector3 targetPosition = ReturnTargetPos(frontPosition);
+        //Debug.Log("target pos: " + targetPosition.y + "," + targetPosition.x + "," + targetPosition.z);
+
+
         try
         {
-            Debug.Log("Target Cube ID: " + levels[levelIndex - 1][(int)targetPosition.y, (int)targetPosition.x, (int)targetPosition.z]);
+            int targetID = levels[levelIndex - 1][(int)targetPosition.y, (int)targetPosition.x, (int)targetPosition.z];
+            Debug.LogWarning("Is Move Available: " + IsMoveValid(MoveActions.Forward, player.transform.position, targetPosition, targetID));
+            Debug.Log("Target Cube ID: " + targetID);
         }
         catch(Exception e)
         {
@@ -541,6 +545,51 @@ public class GameCore : MonoBehaviour
             Debug.LogWarning("x: " + (int)targetPosition.x + " y: " + (int)targetPosition.y + " z: " + (int)targetPosition.z);
         }
         player.transform.position = Vector3.MoveTowards(player.transform.position, targetPosition, speed * Time.deltaTime);
+    }
+
+    // Calculates the postion of the available front cube
+    private Vector3 ReturnTargetPos(Vector3 frontPosition)
+    {
+        Vector3 target = new Vector3();
+
+        // X and Z of the target is the same with the front cube
+        target.x = frontPosition.x;
+        target.z = frontPosition.z;
+
+        List<int> floorsStatus = new List<int>();
+
+        // get the topest available cube above the front cube
+        // note: front cube is at the same height of the current cube
+        try
+        {
+            for (int floor = 4; floor >= 0; floor--)
+            {
+                if (levels[levelIndex - 1][floor, (int)frontPosition.x, (int)frontPosition.z] == 1 ||
+                    levels[levelIndex - 1][floor, (int)frontPosition.x, (int)frontPosition.z] == 2)
+                {
+                    target.y = floor;
+                    break;
+                }
+            }
+            // get the status of the whole front floors
+            for (int floor = 4; floor >= 0; floor--)
+            {
+                floorsStatus.Add(levels[levelIndex - 1][floor, (int)frontPosition.x, (int)frontPosition.z]);
+            }
+        }
+        catch(Exception e)
+        {
+            Debug.LogWarning("Error of target cube: " + e.Message);
+        }
+
+        string ans = "";
+        foreach(int x in floorsStatus)
+        {
+            ans += x.ToString() + " ";
+        }
+        //Debug.Log("floors: " + ans);
+
+        return target;
     }
 
     // Normalaize the coordinates of the player to identify type of the cube it wants to go on
@@ -558,6 +607,9 @@ public class GameCore : MonoBehaviour
     // To make the player jump up and forward(simultaneously)
     public void Jump()
     {
+        Vector3 frontPosition = player.transform.position += player.transform.forward;
+        frontPosition = NormalizeCoordinates(frontPosition);
+        Vector3 targetPosition = ReturnTargetPos(frontPosition);
 
     }
 
@@ -579,13 +631,12 @@ public class GameCore : MonoBehaviour
     private void LightUp()
     {
         Debug.Log("Light is up darling");
-
     }
 
     // Check if the next action is valid according to the map or not
-    public bool IsMoveValid(MoveActions action, Vector3 currnetPos, Vector3 targetPos)
+    public bool IsMoveValid(MoveActions action, Vector3 currnetPos, Vector3 targetPos, int targetID)
     {
-        bool ans;
+        bool ans = true;
         Vector3Int targetPosInt, currentPosInt;
         targetPosInt = ConvertToInt(targetPos);
         currentPosInt = ConvertToInt(currnetPos);
@@ -605,20 +656,72 @@ public class GameCore : MonoBehaviour
 
             case MoveActions.LightUp:
                 {
-                    if ((levels[levelIndex][targetPosInt.x, targetPosInt.y, targetPosInt.z]) == 2)
+                    // if the target is a goal cube it is okay to go
+                    if (targetID == 2)
+                    {
                         ans = true;
+                    }  
                     else
+                    {
                         ans = false;
+                        Debug.Log("LightUp Availability: False => Is not goal cube!");
+                    }
+                        
                     break;
                 }
 
             case MoveActions.Jump:
                 {
+                    // if the target position is not in the map or it is an empty cube
+                    // it should be ignored
+                    try
+                    {
+                        ans = true;
+                        if (targetID == 0)
+                        {
+                            ans = false;
+                            Debug.Log("Jump Availability: False => Is out of the map!");
+                        }
+                        // if the target cube is higher than 1 or at the same level with the current cube
+                        // movement is not allowed
+                        else if((targetPosInt.y - currentPosInt.y > 1) || (targetPosInt.y == currentPosInt.y))
+                        {
+                            ans = false;
+                            Debug.Log("Jump Availability: False => It is the same height or more the 1 level higher!");
+                        }
+                    }
+                    catch
+                    {
+                        ans = false;
+                        Debug.Log("Error Jump Availability: False => Is out of the map!");
+                    }
                     break;
                 }
 
             case MoveActions.Forward:
                 {
+                    // if the target position is not in the map or it is an empty cube
+                    // it should be ignored
+                    try
+                    {
+                        ans = true;
+                        if (targetID == 0)
+                        {
+                            ans = false;
+                            Debug.Log("Forward Availability: False => Is out of the map!");
+                        }
+                        // if the target cube is higher or lower than the current cube, it's not allowed to go
+                        else if(targetPosInt.y != currentPosInt.y)
+                        {
+                            ans = false;
+                            Debug.Log("Forward Availability: False => Not at the same height!");
+                        }
+                    }
+                    catch
+                    {
+                        ans = false;
+                        Debug.Log("Error Forward Availability: False => Is out of the map!");
+                    }
                     break;
                 }
         }
