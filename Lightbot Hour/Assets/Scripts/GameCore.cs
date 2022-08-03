@@ -676,6 +676,7 @@ public class GameCore : MonoBehaviour
         Vector3 currentPos = NormalizeCoordinates(player.transform.position);
         currentPos = ConvertPosToGameMapFormat(currentPos);
         Vector3Int currentPosInt = ConvertToInt(currentPos);
+
         int currentID = levels[levelIndex - 1][currentPosInt.y, currentPosInt.x, currentPosInt.z];
         Debug.Log("Light is up darling for pos: " + currentPosInt + "    ID: " + currentID);       
         StartCoroutine(TurnOnPlayerLight());
