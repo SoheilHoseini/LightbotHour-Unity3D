@@ -12,11 +12,16 @@ public class GameCore : MonoBehaviour
     [SerializeField] GameObject goalCubePrefab;
     [SerializeField] GameObject goalCubeLightPrefab;
     [SerializeField] GameObject playerPrefab;
-    GameObject player;
+
+    [HideInInspector]
+    public GameObject player;
+
     GameObject goalCubeLight;
-    PlayerController playerControllerScript;
+
+    [HideInInspector]
+    public PlayerController playerControllerScript;
     public LevelsSetting levelsSetting;
-    [SerializeField] GameObject nextLevelBtn;
+    [SerializeField] public GameObject nextLevelBtn;
 
     // An list to store the design of all levels in it
     // x, y, z represent floor, row and column
@@ -44,7 +49,7 @@ public class GameCore : MonoBehaviour
     
     // Determine which level to play
     [Tooltip("For Debugging Purpose")]
-    [SerializeField] int levelIndex;
+    [SerializeField] public int levelIndex;
 
     void Start()
     {
@@ -56,7 +61,7 @@ public class GameCore : MonoBehaviour
         DesignPlayerPosition();
         DesignPlayerRotation();
         GeneratePlayer(levelIndex);
-        playerControllerScript = player.GetComponent<PlayerController>();
+        playerControllerScript = player.GetComponent<PlayerController>(); 
     }
 
     private void Update()
@@ -478,7 +483,7 @@ public class GameCore : MonoBehaviour
     }
 
     // Determine position of the player in each level 
-    private void DesignPlayerPosition()
+    public void DesignPlayerPosition()
     {
         // Set position
         playerPos1_1 = new Vector3(0, 0.75f, 0);
@@ -504,7 +509,7 @@ public class GameCore : MonoBehaviour
     }
 
     // Determine rotation of the player in each level 
-    private void DesignPlayerRotation()
+    public void DesignPlayerRotation()
     {
         // Set the rotations
         playerRot1_1 = Quaternion.Euler(0, 0, 0);
@@ -531,7 +536,7 @@ public class GameCore : MonoBehaviour
     }
 
     // Generate the player according the player position and rotation
-    private void GeneratePlayer(int levelIndex)
+    public void GeneratePlayer(int levelIndex)
     {
         try
         {
@@ -684,7 +689,7 @@ public class GameCore : MonoBehaviour
     }
 
     // When the player gets to a goal cube, it can light up and go to the next state
-    private void LightUp()
+    public void LightUp()
     {
         Vector3 currentPos = NormalizeCoordinates(player.transform.position);
         currentPos = ConvertPosToGameMapFormat(currentPos);
