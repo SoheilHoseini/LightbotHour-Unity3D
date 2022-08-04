@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class GameCore : MonoBehaviour
 {
@@ -13,6 +14,7 @@ public class GameCore : MonoBehaviour
     GameObject player;
     GameObject goalCubeLight;
     PlayerController playerControllerScript;
+    public LevelsSetting levelsSetting;
 
     // An list to store the design of all levels in it
     // x, y, z represent floor, row and column
@@ -41,7 +43,8 @@ public class GameCore : MonoBehaviour
 
     void Start()
     {
-        
+        levelIndex = levelsSetting.levelIndx;
+
         DesignLevelsScene();
         GenerateLevel(levelIndex);
 
@@ -820,6 +823,12 @@ public class GameCore : MonoBehaviour
         vector.z = Convert.ToInt32(coord.z);
 
         return vector;
+    }
+
+    public void OpenMainMenuScene()
+    {
+        Debug.Log("Main Menu Scene is loaded!");
+        SceneManager.LoadScene(0);
     }
 }
 
