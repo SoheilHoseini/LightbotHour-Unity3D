@@ -22,6 +22,9 @@ public class GameCore : MonoBehaviour
     public PlayerController playerControllerScript;
     public LevelsSetting levelsSetting;
     [SerializeField] public GameObject nextLevelBtn;
+    [SerializeField] GameObject procedureBlock;
+    [SerializeField] GameObject procBtn;
+    [SerializeField] Text procMoveCntText;
 
     // An list to store the design of all levels in it
     // x, y, z represent floor, row and column
@@ -31,6 +34,10 @@ public class GameCore : MonoBehaviour
 
     // A dictionary to check wether all goal cubes have been visited or not
     Dictionary<Vector3, int> goalCubesVisited = new Dictionary<Vector3, int>();
+
+    // A list to implement procedure block
+    List<MoveActions> prMoveList = new List<MoveActions>();
+    bool isPrOpen;
 
     // Categorize each level according to their number of floors
     int[,,] level1_1, level1_2, level1_3,
@@ -53,7 +60,22 @@ public class GameCore : MonoBehaviour
 
     void Start()
     {
+
         levelIndex = levelsSetting.levelIndx;
+
+        //Initialze Proc
+        procMoveCntText.text = (prMoveList.Count).ToString();
+
+        //procedure block is only available in level 9
+        if (levelIndex == 9)
+        {
+            procBtn.SetActive(true);
+        }
+        else
+        {
+            procBtn.SetActive(false);
+        }
+
         nextLevelBtn.SetActive(false);
         DesignLevelsScene();
         GenerateLevel(levelIndex);
@@ -66,30 +88,31 @@ public class GameCore : MonoBehaviour
 
     private void Update()
     {
-        if(Input.GetKeyDown(KeyCode.W))
-        {
-            MoveForward();
-        }    
+        //// Keyboard movement control
+        //if(Input.GetKeyDown(KeyCode.W))
+        //{
+        //    MoveForward();
+        //}    
 
-        if(Input.GetKeyDown(KeyCode.A))
-        {
-            TurnLeft();
-        }
+        //if(Input.GetKeyDown(KeyCode.A))
+        //{
+        //    TurnLeft();
+        //}
 
-        if(Input.GetKeyDown(KeyCode.D))
-        {
-            TurnRight();
-        }
+        //if(Input.GetKeyDown(KeyCode.D))
+        //{
+        //    TurnRight();
+        //}
 
-        if(Input.GetKeyDown(KeyCode.Space))
-        {
-            LightUp();
-        }
+        //if(Input.GetKeyDown(KeyCode.Space))
+        //{
+        //    LightUp();
+        //}
 
-        if (Input.GetKeyDown(KeyCode.X))
-        {
-            Jump();
-        }
+        //if (Input.GetKeyDown(KeyCode.X))
+        //{
+        //    Jump();
+        //}
     }
 
     // This method designs the array form of each level and adds them to the list of levels
@@ -891,6 +914,104 @@ public class GameCore : MonoBehaviour
         {
             SceneManager.LoadScene(1);
         }   
+    }
+
+    public void ProcedureBlock()
+    {
+        if (isPrOpen == true)
+        {
+            procedureBlock.SetActive(false);
+            isPrOpen = false;
+        }
+        else
+        {
+            procedureBlock.SetActive(true);
+            isPrOpen = true;
+        }
+    }
+
+    // Execute the instructions in the procedure block
+    public void RunProcBlock()
+    {
+        foreach(var item in prMoveList)
+        {
+            switch (item)
+            {
+                case MoveActions.Forward:
+                    {
+                        MoveForward();
+                        break;
+                    }
+                case MoveActions.Jump:
+                    {
+                        Jump();
+                        break;
+                    }
+                case MoveActions.RotateLeft:
+                    {
+                        TurnLeft();
+                        break;
+                    }
+                case MoveActions.RotateRight:
+                    {
+                        TurnRight();
+                        break;
+                    }
+                case MoveActions.LightUp:
+                    {
+                        LightUp();
+                        break;
+                    }
+            }
+        }
+        prMoveList = new List<MoveActions>(); // Empty the list after each run
+        procMoveCntText.text = (prMoveList.Count).ToString();
+        ProcedureBlock();
+    }
+
+    public void ProcedureForward()
+    {
+        if(prMoveList.Count < 8)
+        {
+            prMoveList.Add(MoveActions.Forward);
+            procMoveCntText.text = (prMoveList.Count).ToString();
+        }
+    }
+
+    public void ProcedureJump()
+    {
+        if (prMoveList.Count < 8)
+        {
+            prMoveList.Add(MoveActions.Jump);
+            procMoveCntText.text = (prMoveList.Count).ToString();
+        }
+    }
+
+    public void ProcedureLeft()
+    {
+        if (prMoveList.Count < 8)
+        {
+            prMoveList.Add(MoveActions.RotateLeft);
+            procMoveCntText.text = (prMoveList.Count).ToString();
+        }
+    }
+
+    public void ProcedureRight()
+    {
+        if (prMoveList.Count < 8)
+        {
+            prMoveList.Add(MoveActions.RotateRight);
+            procMoveCntText.text = (prMoveList.Count).ToString();
+        }
+    }
+
+    public void ProcedureLightUp()
+    {
+        if (prMoveList.Count < 8)
+        {
+            prMoveList.Add(MoveActions.LightUp);
+            procMoveCntText.text = (prMoveList.Count).ToString();
+        }
     }
 }
 
