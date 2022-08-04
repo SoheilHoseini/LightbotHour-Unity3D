@@ -332,7 +332,7 @@ MonoBehaviour:
   goalCubePrefab: {fileID: 7894820141019596235, guid: 4f8d35712d9f57648bcf26c64ebb84df, type: 3}
   goalCubeLightPrefab: {fileID: 8463105853029623167, guid: c983d572e5c7dfd429ff7c5fec9d8001, type: 3}
   playerPrefab: {fileID: 4849581058567192288, guid: eee95c3ff48e5e94580a11246d2f9f46, type: 3}
-  levelIndex: 7
+  levelIndex: 1
 --- !u!4 &1734771402
 Transform:
   m_ObjectHideFlags: 0
