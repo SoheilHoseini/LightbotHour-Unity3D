@@ -12,11 +12,19 @@ public class GameCore : MonoBehaviour
     [SerializeField] GameObject goalCubePrefab;
     [SerializeField] GameObject goalCubeLightPrefab;
     [SerializeField] GameObject playerPrefab;
-    GameObject player;
+
+    [HideInInspector]
+    public GameObject player;
+
     GameObject goalCubeLight;
-    PlayerController playerControllerScript;
+
+    [HideInInspector]
+    public PlayerController playerControllerScript;
     public LevelsSetting levelsSetting;
-    [SerializeField] GameObject nextLevelBtn;
+    [SerializeField] public GameObject nextLevelBtn;
+    [SerializeField] GameObject procedureBlock;
+    [SerializeField] GameObject procBtn;
+    [SerializeField] Text procMoveCntText;
 
     // An list to store the design of all levels in it
     // x, y, z represent floor, row and column
@@ -26,6 +34,10 @@ public class GameCore : MonoBehaviour
 
     // A dictionary to check wether all goal cubes have been visited or not
     Dictionary<Vector3, int> goalCubesVisited = new Dictionary<Vector3, int>();
+
+    // A list to implement procedure block
+    List<MoveActions> prMoveList = new List<MoveActions>();
+    bool isPrOpen;
 
     // Categorize each level according to their number of floors
     int[,,] level1_1, level1_2, level1_3,
@@ -44,11 +56,26 @@ public class GameCore : MonoBehaviour
     
     // Determine which level to play
     [Tooltip("For Debugging Purpose")]
-    [SerializeField] int levelIndex;
+    [SerializeField] public int levelIndex;
 
     void Start()
     {
+
         levelIndex = levelsSetting.levelIndx;
+
+        //Initialze Proc
+        procMoveCntText.text = (prMoveList.Count).ToString();
+
+        //procedure block is only available in level 9
+        if (levelIndex == 9)
+        {
+            procBtn.SetActive(true);
+        }
+        else
+        {
+            procBtn.SetActive(false);
+        }
+
         nextLevelBtn.SetActive(false);
         DesignLevelsScene();
         GenerateLevel(levelIndex);
@@ -56,35 +83,36 @@ public class GameCore : MonoBehaviour
         DesignPlayerPosition();
         DesignPlayerRotation();
         GeneratePlayer(levelIndex);
-        playerControllerScript = player.GetComponent<PlayerController>();
+        playerControllerScript = player.GetComponent<PlayerController>(); 
     }
 
     private void Update()
     {
-        if(Input.GetKeyDown(KeyCode.W))
-        {
-            MoveForward();
-        }    
+        //// Keyboard movement control
+        //if(Input.GetKeyDown(KeyCode.W))
+        //{
+        //    MoveForward();
+        //}    
 
-        if(Input.GetKeyDown(KeyCode.A))
-        {
-            TurnLeft();
-        }
+        //if(Input.GetKeyDown(KeyCode.A))
+        //{
+        //    TurnLeft();
+        //}
 
-        if(Input.GetKeyDown(KeyCode.D))
-        {
-            TurnRight();
-        }
+        //if(Input.GetKeyDown(KeyCode.D))
+        //{
+        //    TurnRight();
+        //}
 
-        if(Input.GetKeyDown(KeyCode.Space))
-        {
-            LightUp();
-        }
+        //if(Input.GetKeyDown(KeyCode.Space))
+        //{
+        //    LightUp();
+        //}
 
-        if (Input.GetKeyDown(KeyCode.X))
-        {
-            Jump();
-        }
+        //if (Input.GetKeyDown(KeyCode.X))
+        //{
+        //    Jump();
+        //}
     }
 
     // This method designs the array form of each level and adds them to the list of levels
@@ -478,7 +506,7 @@ public class GameCore : MonoBehaviour
     }
 
     // Determine position of the player in each level 
-    private void DesignPlayerPosition()
+    public void DesignPlayerPosition()
     {
         // Set position
         playerPos1_1 = new Vector3(0, 0.75f, 0);
@@ -504,7 +532,7 @@ public class GameCore : MonoBehaviour
     }
 
     // Determine rotation of the player in each level 
-    private void DesignPlayerRotation()
+    public void DesignPlayerRotation()
     {
         // Set the rotations
         playerRot1_1 = Quaternion.Euler(0, 0, 0);
@@ -531,7 +559,7 @@ public class GameCore : MonoBehaviour
     }
 
     // Generate the player according the player position and rotation
-    private void GeneratePlayer(int levelIndex)
+    public void GeneratePlayer(int levelIndex)
     {
         try
         {
@@ -684,7 +712,7 @@ public class GameCore : MonoBehaviour
     }
 
     // When the player gets to a goal cube, it can light up and go to the next state
-    private void LightUp()
+    public void LightUp()
     {
         Vector3 currentPos = NormalizeCoordinates(player.transform.position);
         currentPos = ConvertPosToGameMapFormat(currentPos);
@@ -886,6 +914,104 @@ public class GameCore : MonoBehaviour
         {
             SceneManager.LoadScene(1);
         }   
+    }
+
+    public void ProcedureBlock()
+    {
+        if (isPrOpen == true)
+        {
+            procedureBlock.SetActive(false);
+            isPrOpen = false;
+        }
+        else
+        {
+            procedureBlock.SetActive(true);
+            isPrOpen = true;
+        }
+    }
+
+    // Execute the instructions in the procedure block
+    public void RunProcBlock()
+    {
+        foreach(var item in prMoveList)
+        {
+            switch (item)
+            {
+                case MoveActions.Forward:
+                    {
+                        MoveForward();
+                        break;
+                    }
+                case MoveActions.Jump:
+                    {
+                        Jump();
+                        break;
+                    }
+                case MoveActions.RotateLeft:
+                    {
+                        TurnLeft();
+                        break;
+                    }
+                case MoveActions.RotateRight:
+                    {
+                        TurnRight();
+                        break;
+                    }
+                case MoveActions.LightUp:
+                    {
+                        LightUp();
+                        break;
+                    }
+            }
+        }
+        prMoveList = new List<MoveActions>(); // Empty the list after each run
+        procMoveCntText.text = (prMoveList.Count).ToString();
+        ProcedureBlock();
+    }
+
+    public void ProcedureForward()
+    {
+        if(prMoveList.Count < 8)
+        {
+            prMoveList.Add(MoveActions.Forward);
+            procMoveCntText.text = (prMoveList.Count).ToString();
+        }
+    }
+
+    public void ProcedureJump()
+    {
+        if (prMoveList.Count < 8)
+        {
+            prMoveList.Add(MoveActions.Jump);
+            procMoveCntText.text = (prMoveList.Count).ToString();
+        }
+    }
+
+    public void ProcedureLeft()
+    {
+        if (prMoveList.Count < 8)
+        {
+            prMoveList.Add(MoveActions.RotateLeft);
+            procMoveCntText.text = (prMoveList.Count).ToString();
+        }
+    }
+
+    public void ProcedureRight()
+    {
+        if (prMoveList.Count < 8)
+        {
+            prMoveList.Add(MoveActions.RotateRight);
+            procMoveCntText.text = (prMoveList.Count).ToString();
+        }
+    }
+
+    public void ProcedureLightUp()
+    {
+        if (prMoveList.Count < 8)
+        {
+            prMoveList.Add(MoveActions.LightUp);
+            procMoveCntText.text = (prMoveList.Count).ToString();
+        }
     }
 }
 
