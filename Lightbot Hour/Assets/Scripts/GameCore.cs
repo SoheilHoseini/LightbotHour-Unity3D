@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 
 public class GameCore : MonoBehaviour
@@ -15,6 +16,7 @@ public class GameCore : MonoBehaviour
     GameObject goalCubeLight;
     PlayerController playerControllerScript;
     public LevelsSetting levelsSetting;
+    [SerializeField] GameObject nextLevelBtn;
 
     // An list to store the design of all levels in it
     // x, y, z represent floor, row and column
@@ -47,7 +49,7 @@ public class GameCore : MonoBehaviour
     void Start()
     {
         levelIndex = levelsSetting.levelIndx;
-
+        nextLevelBtn.SetActive(false);
         DesignLevelsScene();
         GenerateLevel(levelIndex);
 
@@ -689,7 +691,7 @@ public class GameCore : MonoBehaviour
         Vector3Int currentPosInt = ConvertToInt(currentPos);
 
         int currentID = levels[levelIndex - 1][currentPosInt.x, currentPosInt.y, currentPosInt.z];
-        Debug.Log("Light is up darling for pos: " + currentPosInt + "    ID: " + currentID);       
+        //Debug.Log("Light is up darling for pos: " + currentPosInt + "    ID: " + currentID);       
         StartCoroutine(TurnOnPlayerLight());
 
         
@@ -702,6 +704,8 @@ public class GameCore : MonoBehaviour
         if(IslevelCompleted(goalCubesVisited))
         {
             Debug.Log("You Won!");
+            nextLevelBtn.SetActive(true);
+            
         }
     }
 
@@ -869,6 +873,19 @@ public class GameCore : MonoBehaviour
     public void OpenMainMenuScene()
     {
         SceneManager.LoadScene(0);
+    }
+
+    public void NextLevelScene()
+    {
+        levelsSetting.levelIndx += 1;
+        if(levelsSetting.levelIndx > 9)
+        {
+            OpenMainMenuScene();
+        }
+        else
+        {
+            SceneManager.LoadScene(1);
+        }   
     }
 }
 
