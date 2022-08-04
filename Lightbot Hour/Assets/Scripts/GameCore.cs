@@ -83,7 +83,14 @@ public class GameCore : MonoBehaviour
         DesignPlayerPosition();
         DesignPlayerRotation();
         GeneratePlayer(levelIndex);
-        playerControllerScript = player.GetComponent<PlayerController>(); 
+        try
+        {
+            playerControllerScript = player.GetComponent<PlayerController>();
+        }
+        catch (Exception e)
+        {
+            Debug.Log("Player Error: " + e.Message);
+        }
     }
 
     private void Update()
@@ -905,13 +912,15 @@ public class GameCore : MonoBehaviour
 
     public void NextLevelScene()
     {
-        levelsSetting.levelIndx += 1;
-        if(levelsSetting.levelIndx > 9)
+        
+        if(levelsSetting.levelIndx == 9)
         {
+            levelsSetting.levelIndx = 1;
             OpenMainMenuScene();
         }
         else
         {
+            levelsSetting.levelIndx += 1;
             SceneManager.LoadScene(1);
         }   
     }
