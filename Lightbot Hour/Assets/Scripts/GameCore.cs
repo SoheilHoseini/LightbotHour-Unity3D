@@ -8,27 +8,30 @@ public class GameCore : MonoBehaviour
     [Header("All prefabs that make up the scenes")]
     [SerializeField] GameObject normalCubePrefab;
     [SerializeField] GameObject goalCubePrefab;
+    [SerializeField] GameObject goalCubeLightPrefab;
     [SerializeField] GameObject playerPrefab;
     GameObject player;
+    GameObject goalCubeLight;
+    PlayerController playerControllerScript;
 
     // An list to store the design of all levels in it
     // x, y, z represent floor, row and column
-    protected List<int[,,]> levels = new List<int[,,]>();
-    protected List<Vector3> playerPosList = new List<Vector3>();
-    protected List<Quaternion> playerRotList = new List<Quaternion>();
+    List<int[,,]> levels = new List<int[,,]>();
+    List<Vector3> playerPosList = new List<Vector3>();
+    List<Quaternion> playerRotList = new List<Quaternion>();
     
     // Categorize each level according to their number of floors
-    protected int[,,] level1_1, level1_2, level1_3,
+    int[,,] level1_1, level1_2, level1_3,
                       level1_4, level1_5, level1_6,
                       level1_7, level1_8, level2_1;
 
     // Position of the player in each level 
-    protected Vector3 playerPos1_1, playerPos1_2, playerPos1_3,
+    Vector3 playerPos1_1, playerPos1_2, playerPos1_3,
                       playerPos1_4, playerPos1_5, playerPos1_6,
                       playerPos1_7, playerPos1_8, playerPos2_1;
 
     // Rotation of the player in each level 
-    protected Quaternion playerRot1_1, playerRot1_2, playerRot1_3,
+    Quaternion playerRot1_1, playerRot1_2, playerRot1_3,
                          playerRot1_4, playerRot1_5, playerRot1_6,
                          playerRot1_7, playerRot1_8, playerRot2_1;
     
@@ -38,12 +41,14 @@ public class GameCore : MonoBehaviour
 
     void Start()
     {
+        
         DesignLevelsScene();
         GenerateLevel(levelIndex);
 
         DesignPlayerPosition();
         DesignPlayerRotation();
         GeneratePlayer(levelIndex);
+        playerControllerScript = player.GetComponent<PlayerController>();
     }
 
     private void Update()
@@ -517,7 +522,6 @@ public class GameCore : MonoBehaviour
     {
         try
         {
-            //Debug.Log("Rotation: " + playerRotList[levelIndex - 1]);
             player = Instantiate(playerPrefab, playerPosList[levelIndex - 1], playerRotList[levelIndex - 1]);
         }
         catch (Exception e)
@@ -541,7 +545,7 @@ public class GameCore : MonoBehaviour
         {
             int targetID = levels[levelIndex - 1][(int)targetPosition.y, (int)targetPosition.x, (int)targetPosition.z];
             bool moveAvailability = IsMoveValid(MoveActions.Forward, currentPos, targetPosition, targetID);
-            Debug.Log("Target Cube ID: " + targetID);
+            Debug.Log("Target Cube ID: " + targetID + "   Data: " + ConvertPosToGameMapFormat(targetPosition));
 
             if (moveAvailability == true)
             {
@@ -637,7 +641,7 @@ public class GameCore : MonoBehaviour
         {
             int targetID = levels[levelIndex - 1][(int)targetPosition.y, (int)targetPosition.x, (int)targetPosition.z];
             bool moveAvailability = IsMoveValid(MoveActions.Jump, currentPos, targetPosition, targetID);
-            Debug.Log("Target Cube ID: " + targetID);
+            Debug.Log("Target Cube ID: " + targetID + "   Data: " + ConvertPosToGameMapFormat(targetPosition));
 
             if (moveAvailability == true)
             {
@@ -669,22 +673,53 @@ public class GameCore : MonoBehaviour
     // When the player gets to a goal cube, it can light up and go to the next state
     private void LightUp()
     {
-        Debug.Log("Light is up darling");
+        Vector3 currentPos = NormalizeCoordinates(player.transform.position);
+        currentPos = ConvertPosToGameMapFormat(currentPos);
+        Vector3Int currentPosInt = ConvertToInt(currentPos);
+
+        int currentID = levels[levelIndex - 1][currentPosInt.x, currentPosInt.y, currentPosInt.z];
+        Debug.Log("Light is up darling for pos: " + currentPosInt + "    ID: " + currentID);       
+        StartCoroutine(TurnOnPlayerLight());
+
+        if (currentID == 2)
+        {
+            StartCoroutine(TurnOnGoalCubeLight(currentPos));
+        }
+    }
+
+    // Wait a little before turning the light off
+    IEnumerator TurnOnPlayerLight()
+    {
+        playerControllerScript.TurnEmissionOn();
+        playerControllerScript.TurnLightOn();
+
+        yield return new WaitForSeconds(0.5f);
+        playerControllerScript.TurnEmissionOff();
+        playerControllerScript.TurnLightOff();
+    }
+
+    IEnumerator TurnOnGoalCubeLight(Vector3 currentPos)
+    {
+        Vector3 lightPos = ConvertPosToGameMapFormat(currentPos);
+        lightPos.y = player.transform.position.y - 0.5f;
+        goalCubeLight = Instantiate(goalCubeLightPrefab, lightPos, transform.rotation);
+        yield return new WaitForSeconds(0.5f);
+        goalCubeLight.SetActive(false);
     }
 
     // Check if the next action is valid according to the map or not
-    public bool IsMoveValid(MoveActions action, Vector3 currnetPos, Vector3 targetPos, int targetID)
+    public bool IsMoveValid(MoveActions action, Vector3 currentPos, Vector3 targetPos, int targetID)
     {
         bool ans = true;
 
         // Convert coordinates to game map format
-        currnetPos = ConvertPosToGameMapFormat(currnetPos);
+        currentPos = ConvertPosToGameMapFormat(currentPos);
         targetPos = ConvertPosToGameMapFormat(targetPos);
 
         // Convert float values to int for indexing
         Vector3Int targetPosInt, currentPosInt;
         targetPosInt = ConvertToInt(targetPos);
-        currentPosInt = ConvertToInt(currnetPos);
+        currentPosInt = ConvertToInt(currentPos);
         
 
         Debug.Log("Current: " + currentPosInt.ToString() + "  Target: " + targetPosInt.ToString());
