@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 
 public class GameCore : MonoBehaviour
@@ -15,13 +16,17 @@ public class GameCore : MonoBehaviour
     GameObject goalCubeLight;
     PlayerController playerControllerScript;
     public LevelsSetting levelsSetting;
+    [SerializeField] GameObject nextLevelBtn;
 
     // An list to store the design of all levels in it
     // x, y, z represent floor, row and column
     List<int[,,]> levels = new List<int[,,]>();
     List<Vector3> playerPosList = new List<Vector3>();
     List<Quaternion> playerRotList = new List<Quaternion>();
-    
+
+    // A dictionary to check wether all goal cubes have been visited or not
+    Dictionary<Vector3, int> goalCubesVisited = new Dictionary<Vector3, int>();
+
     // Categorize each level according to their number of floors
     int[,,] level1_1, level1_2, level1_3,
                       level1_4, level1_5, level1_6,
@@ -44,7 +49,7 @@ public class GameCore : MonoBehaviour
     void Start()
     {
         levelIndex = levelsSetting.levelIndx;
-
+        nextLevelBtn.SetActive(false);
         DesignLevelsScene();
         GenerateLevel(levelIndex);
 
@@ -455,6 +460,11 @@ public class GameCore : MonoBehaviour
                         else if (levels[levelIndx - 1][floor, row, column] == 2)
                         {
                             Instantiate(goalCubePrefab, position, transform.rotation);
+
+                            // Create the goal cubes list of this level
+                            // All of them are unvisited
+                            Vector3 goalCubePos = new Vector3(floor, row, column);
+                            goalCubesVisited[goalCubePos] = 0; 
                         }
                     }
                 }
@@ -632,7 +642,7 @@ public class GameCore : MonoBehaviour
         return ans;
     }
 
-    // To make the player jump up and forward(simultaneously)
+    // To make the player jump up and forward (simultaneously)
     public void Jump()
     {
         Vector3 frontPosition = player.transform.position + player.transform.forward;
@@ -681,15 +691,50 @@ public class GameCore : MonoBehaviour
         Vector3Int currentPosInt = ConvertToInt(currentPos);
 
         int currentID = levels[levelIndex - 1][currentPosInt.x, currentPosInt.y, currentPosInt.z];
-        Debug.Log("Light is up darling for pos: " + currentPosInt + "    ID: " + currentID);       
+        //Debug.Log("Light is up darling for pos: " + currentPosInt + "    ID: " + currentID);       
         StartCoroutine(TurnOnPlayerLight());
 
+        
         if (currentID == 2)
         {
+            goalCubesVisited[currentPos] = 1;
             StartCoroutine(TurnOnGoalCubeLight(currentPos));
+        }
+        PrintGoalsStatus(goalCubesVisited);
+        if(IslevelCompleted(goalCubesVisited))
+        {
+            Debug.Log("You Won!");
+            nextLevelBtn.SetActive(true);
+            
         }
     }
 
+    // For debugging
+    public void PrintGoalsStatus(Dictionary<Vector3, int> goalVisited)
+    {
+        string ans = "";
+        foreach(var item in goalVisited)
+        {
+            ans += item.Key.ToString() + ": " + item.Value.ToString() + "  ,";
+        }
+        Debug.Log(ans);
+    }
+
+    // Check if the player has visited all goal cubes or not
+    public bool IslevelCompleted(Dictionary<Vector3, int> goalVisited)
+    {
+        int listLen = goalVisited.Count;
+        int valuesSum = 0;
+        foreach(var item in goalVisited)
+        {
+            valuesSum += item.Value;
+        }
+
+        if (valuesSum == listLen)
+            return true;
+
+        return false;
+    }
     // Wait a little before turning the light off
     IEnumerator TurnOnPlayerLight()
     {
@@ -827,8 +872,20 @@ public class GameCore : MonoBehaviour
 
     public void OpenMainMenuScene()
     {
-        Debug.Log("Main Menu Scene is loaded!");
         SceneManager.LoadScene(0);
+    }
+
+    public void NextLevelScene()
+    {
+        levelsSetting.levelIndx += 1;
+        if(levelsSetting.levelIndx > 9)
+        {
+            OpenMainMenuScene();
+        }
+        else
+        {
+            SceneManager.LoadScene(1);
+        }   
     }
 }
 
