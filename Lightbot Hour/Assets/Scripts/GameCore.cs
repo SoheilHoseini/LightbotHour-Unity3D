@@ -21,7 +21,10 @@ public class GameCore : MonoBehaviour
     List<int[,,]> levels = new List<int[,,]>();
     List<Vector3> playerPosList = new List<Vector3>();
     List<Quaternion> playerRotList = new List<Quaternion>();
-    
+
+    // A dictionary to check wether all goal cubes have been visited or not
+    Dictionary<Vector3, int> goalCubesVisited = new Dictionary<Vector3, int>();
+
     // Categorize each level according to their number of floors
     int[,,] level1_1, level1_2, level1_3,
                       level1_4, level1_5, level1_6,
@@ -455,6 +458,11 @@ public class GameCore : MonoBehaviour
                         else if (levels[levelIndx - 1][floor, row, column] == 2)
                         {
                             Instantiate(goalCubePrefab, position, transform.rotation);
+
+                            // Create the goal cubes list of this level
+                            // All of them are unvisited
+                            Vector3 goalCubePos = new Vector3(floor, row, column);
+                            goalCubesVisited[goalCubePos] = 0; 
                         }
                     }
                 }
@@ -632,7 +640,7 @@ public class GameCore : MonoBehaviour
         return ans;
     }
 
-    // To make the player jump up and forward(simultaneously)
+    // To make the player jump up and forward (simultaneously)
     public void Jump()
     {
         Vector3 frontPosition = player.transform.position + player.transform.forward;
@@ -684,12 +692,45 @@ public class GameCore : MonoBehaviour
         Debug.Log("Light is up darling for pos: " + currentPosInt + "    ID: " + currentID);       
         StartCoroutine(TurnOnPlayerLight());
 
+        
         if (currentID == 2)
         {
+            goalCubesVisited[currentPos] = 1;
             StartCoroutine(TurnOnGoalCubeLight(currentPos));
+        }
+        PrintGoalsStatus(goalCubesVisited);
+        if(IslevelCompleted(goalCubesVisited))
+        {
+            Debug.Log("You Won!");
         }
     }
 
+    // For debugging
+    public void PrintGoalsStatus(Dictionary<Vector3, int> goalVisited)
+    {
+        string ans = "";
+        foreach(var item in goalVisited)
+        {
+            ans += item.Key.ToString() + ": " + item.Value.ToString() + "  ,";
+        }
+        Debug.Log(ans);
+    }
+
+    // Check if the player has visited all goal cubes or not
+    public bool IslevelCompleted(Dictionary<Vector3, int> goalVisited)
+    {
+        int listLen = goalVisited.Count;
+        int valuesSum = 0;
+        foreach(var item in goalVisited)
+        {
+            valuesSum += item.Value;
+        }
+
+        if (valuesSum == listLen)
+            return true;
+
+        return false;
+    }
     // Wait a little before turning the light off
     IEnumerator TurnOnPlayerLight()
     {
@@ -827,7 +868,6 @@ public class GameCore : MonoBehaviour
 
     public void OpenMainMenuScene()
     {
-        Debug.Log("Main Menu Scene is loaded!");
         SceneManager.LoadScene(0);
     }
 }
